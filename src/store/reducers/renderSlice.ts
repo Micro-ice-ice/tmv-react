@@ -1,7 +1,6 @@
 import {graphicsModes} from '../../models/graphicModes';
 import {createSlice, PayloadAction} from '@reduxjs/toolkit';
 import {sceneBackgrounds} from '../../models/sceneBackgrounds';
-import * as THREE from 'three';
 
 interface renderState {
 

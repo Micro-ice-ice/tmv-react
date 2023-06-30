@@ -9,11 +9,15 @@ import RenderService from '../api/renderService';
 
 const Scene = () => {
 
+    //redux
+
     const {graphicMode, sceneBackground, cameraPosition} = useAppSelector(state => state.renderReducer);
 
     const {changeCameraPosition} = renderSlice.actions;
 
     const dispatch = useAppDispatch();
+
+    //инициализация начальных параметров сцены
 
     const pointLightRef = useRef<THREE.PointLight>(null);
 
@@ -29,6 +33,8 @@ const Scene = () => {
     });
 
     const groupRef = useRef<THREE.Group>(null);
+
+    //хуки для отслеживания изменений параметров
 
     useEffect(() => {
 
