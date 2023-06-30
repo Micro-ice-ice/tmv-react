@@ -1,50 +1,57 @@
 import * as THREE from 'three';
 import React, { useEffect, useRef } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
-import { OrbitControls } from '@react-three/drei';
-import MeshService from '../api/meshService';
-import {Cell} from 'three-model-visualization';
+import {OrbitControls} from '@react-three/drei';
+import {renderSlice} from '../store/reducers/renderSlice';
+import {useAppDispatch, useAppSelector} from '../hooks/redux';
+import ColorService from '../api/colorService';
+import RenderService from '../api/renderService';
 
-const Scene = (props: any) => {
+const Scene = () => {
+
+    const {graphicMode, sceneBackground, cameraPosition} = useAppSelector(state => state.renderReducer);
+
+    const {changeCameraPosition} = renderSlice.actions;
+
+    const dispatch = useAppDispatch();
 
     const pointLightRef = useRef<THREE.PointLight>(null);
 
     const camera = useThree((state) => state.camera);
+    camera.position.set(...cameraPosition);
 
     const scene = useThree((state) => state.scene);
-    scene.background = new THREE.Color(0x222222);
 
     useFrame(() => {
 
-        const cameraPosition = camera.position;
-
-        pointLightRef.current?.position.set(...cameraPosition.toArray());
+        dispatch(changeCameraPosition(camera.position.toArray()));
+        pointLightRef.current?.position.set(...camera.position.toArray());
     });
 
     const groupRef = useRef<THREE.Group>(null);
 
     useEffect(() => {
-        console.log('init mesh');
-        groupRef.current?.children.forEach(child => {
-            const mesh = child as THREE.Mesh;
-            mesh.geometry.dispose();
-        });
-        groupRef.current?.clear();
 
-        Cell.Material = new THREE.MeshLambertMaterial({vertexColors: true});
+        if (groupRef.current){
 
-        const mesh = MeshService.getMesh();
-        mesh.Cells.forEach((cell) => {
-            groupRef.current?.add(cell.ThreeObject);
-        });
-    }, []);
+            RenderService.renderMesh(groupRef.current, graphicMode);
+        }
+        camera.position.set(...cameraPosition);
 
+    }, [graphicMode]);
+
+    useEffect(() => {
+
+        scene.background = ColorService.getColor(sceneBackground);
+        camera.position.set(...cameraPosition);
+
+    }, [sceneBackground]);
 
     return (
         <>
             <perspectiveCamera fov={45}/>
             <OrbitControls />
-            <pointLight color={0xffffff} ref={pointLightRef}/>
+            <pointLight color={0xbbbbbb} ref={pointLightRef}/>
             <ambientLight color={0x666666}/>
             <group ref={groupRef}/>
         </>
